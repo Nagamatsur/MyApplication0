@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -37,6 +38,9 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     private TextView typeView;
     private TextView infoView;
     private GraphView xView, vView, aView;
+    private TextView DinfoView,VinfoView,AinfoView;
+
+
 
     private SensorManager manager;
     private Sensor sensor;
@@ -44,18 +48,23 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     private final Handler handler = new Handler();
     private final Timer timer = new Timer();
 
-    private float rdx, rdy, rdz, rD;
-    private float rvx, rvy, rvz, rV;
+
+    private float rdx=0, rdy=0, rdz=0, rD;
+    private float rvx=0, rvy=0, rvz=0, rV;
     private float oldrvx=0,oldrvy=0, oldrvz=0;
-    private float rax, ray, raz, rA;
+    private float rA;
     private float oldrax, oldray, oldraz;
 
-    private float vdx, vdy, vdz, vD;
-    private float vvx, vvy, vvz, vV;
+    private float vdx=0, vdy=0, vdz=0, vD;
+    private float vvx=0, vvy=0, vvz=0, vV;
     private float oldvvx=0,oldvvy=0, oldvvz=0;
     private float vax, vay, vaz, vA;
     private float oldvax=0,oldvay=0, oldvaz=0;
 
+    int shD=1;
+    int shV=1;
+
+    private float time = 0;
     private int rate;
     private int accuracy;
     private long prevTimestamp;
@@ -63,6 +72,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     private int delay = SensorManager.SENSOR_DELAY_NORMAL;
     private int type = Sensor.TYPE_ACCELEROMETER;
 
+    private int GravF;
+    private float Grav;
 
 
     @Override
@@ -75,11 +86,15 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         int num = intent.getIntExtra("Num",0);
         Log.d(TAG, "Num: "+ Integer.toString(num));
 
+
         typeView = findViewById(R.id.type_view);
         infoView = findViewById(R.id.info_view);
-        xView = findViewById(R.id.x_view);
+        xView = findViewById(R.id.d_view);
+        DinfoView = findViewById(R.id.Dinfo_view);
         vView = findViewById(R.id.v_view);
+        VinfoView = findViewById(R.id.Vinfo_view);
         aView = findViewById(R.id.a_view);
+        AinfoView = findViewById(R.id.Ainfo_view);
 
         manager = (SensorManager) getSystemService(SENSOR_SERVICE);
         if (manager == null) {
@@ -110,10 +125,13 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     public void run() {
-        infoView.setText(getString(R.string.info_format, accuracy, rate));
+        infoView.setText(getString(R.string.info_format, accuracy, rate, time));
         xView.addData(rD, vD);
+        DinfoView.setText(getString(R.string.Dinfo_format, vD*shD));
         vView.addData(rV, vV);
+        VinfoView.setText(getString(R.string.Vinfo_format, vV*shV));
         aView.addData(rA, vA);
+        AinfoView.setText(getString(R.string.Ainfo_format, vA));
     }
 
     @Override
@@ -186,30 +204,73 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     public void onSensorChanged(SensorEvent event) {
         long ts = event.timestamp;
         rate = (int) (ts - prevTimestamp) / 1000;
-        rax = (float)3;
-        ray = event.values[1] - (float)9.77631;
-        raz = event.values[2]-(float)0.812349;
-        rA = (float) Math.sqrt(rax*rax+ray*ray+raz*raz);
 
-        int shV=10000;
-        rvx+=(rax+oldrax)/2*rate;
-        Log.d(TAG, "onSensorChanged: "+rax+"+"+oldray+"/2*"+rate);
+        final float NS2S = 1.0f / 1000000000.0f;
+        float dT = (ts - prevTimestamp)*NS2S;
+        time+=dT;
+
+        float rax = event.values[0];
+        float ray = event.values[1];
+        float raz = event.values[2];
+
+        if (prevTimestamp==0){//fist step
+            dT=0;//initial dT reset
+            //detecting initial position
+            if (rax<-9){
+                GravF=1;
+                Grav=rax;
+            }else if(ray<-9){
+                GravF=2;
+                Grav=ray;
+            }else if(raz<-9){
+                GravF=3;
+                Grav=raz;
+            }else if (rax>9){
+                GravF=4;
+                Grav=rax;
+            }else if(ray>9){
+                GravF=5;
+                Grav=ray;
+            }else if(raz>9){
+                GravF=6;
+                Grav=raz;
+            }
+            time = 0;
+        }
+
+        if (GravF==1){
+            rax+=Grav;
+        }else if(GravF==2){
+            ray+=Grav;
+        }else if(GravF==3){
+            raz+=Grav;
+        }else if (GravF==4){
+            rax-=Grav;
+        }else if(GravF==5){
+            ray-=Grav;
+        }else if(GravF==6){
+            raz-=Grav;
+        }
+        rA = (float) Math.sqrt(rax * rax + ray * ray + raz * raz);
+
+
+        rvx+=(rax +oldrax)/2*dT;
+        Log.d(TAG, "onSensorChanged: "+ rax +" + "+ oldrax +" /2 * "+dT+" = "+ (rax +oldrax)/2*dT);
         rvx/=shV;
-        rvy+=(ray+oldray)/2*rate;
+        rvy+=(ray +oldray)/2*dT;
         rvy/=shV;
-        rvz+=(raz+oldraz)/2*rate;
+        rvz+=(raz +oldraz)/2*dT;
         rvz/=shV;
         rV = (float) Math.sqrt(rvx*rvx+rvy*rvy+vvz*rvz);
-        oldrax=rax;
-        oldray=ray;
-        oldraz=raz;
+        oldrax= rax;
+        oldray= ray;
+        oldraz= raz;
 
-        int shD=10000;
-        rdx+=(rvx+oldrvx)/2*rate;
+        rdx+=(rvx+oldrvx)/2*dT;
         rdx/=shD;
-        rdy+=(rvy+oldrvy)/2*rate;
+        rdy+=(rvy+oldrvy)/2*dT;
         rdy/=shD;
-        rdz+=(rvz+oldrvz)/2*rate;
+        rdz+=(rvz+oldrvz)/2*dT;
         rdz/=shD;
         rD = (float) Math.sqrt(rdx*rdx+rdy*rdy+rdz*rdz);
         oldrvx=rvx;
@@ -225,27 +286,28 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         vaz = ALPHA * vaz + (1 - ALPHA) * raz;
         vA = (float) Math.sqrt(vax*vax+vay*vay+vaz*vaz);
 
-        vvx=(vax+oldvax)/2*rate+vvx;
+        vvx=(vax+oldvax)/2*dT+vvx;
         vvx/=shV;
-        vvy=(vay+oldvay)/2*rate+vvy;
+        vvy=(vay+oldvay)/2*dT+vvy;
         vvy/=shV;
-        vvz=(vaz+oldvaz)/2*rate+vvz;
+        vvz=(vaz+oldvaz)/2*dT+vvz;
         vvz/=shV;
         vV = (float) Math.sqrt(vvx*vvx+vvy*vvy+vvz*vvz);
         oldvax=vax;
         oldvay=vay;
         oldvaz=vaz;
 
-        vdx=(vvx+oldvvx)/2*rate+vdx;
+        vdx=(vvx+oldvvx)/2*dT+vdx;
         vdx/=shD;
-        vdy=(vvy+oldvvy)/2*rate+vdy;
+        vdy=(vvy+oldvvy)/2*dT+vdy;
         vdy/=shD;
-        vdz=(vvz+oldvvz)/2*rate+vdz;
+        vdz=(vvz+oldvvz)/2*dT+vdz;
         vdz/=shD;
         vD = (float) Math.sqrt(vdx*vdx+vdy*vdy+vdz*vdz);
         oldvvx=vvx;
         oldvvy=vvy;
         oldvvz=vvz;
+
         prevTimestamp = ts;
     }
 

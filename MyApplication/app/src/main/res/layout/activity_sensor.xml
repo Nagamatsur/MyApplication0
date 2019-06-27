@@ -26,7 +26,7 @@
         app:layout_constraintBottom_toBottomOf="@id/type_view" />
 
     <jp.ac.titech.itpro.sdl.myapplication.GraphView
-        android:id="@+id/x_view"
+        android:id="@+id/d_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="@dimen/margin"
@@ -36,14 +36,23 @@
         app:layout_constraintTop_toBottomOf="@id/type_view" />
 
     <TextView
-        android:id="@+id/x_label"
+        android:id="@+id/d_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin"
         android:text="@string/x"
         android:textSize="@dimen/small_text_size"
-        app:layout_constraintStart_toStartOf="@id/x_view"
-        app:layout_constraintTop_toTopOf="@id/x_view" />
+        app:layout_constraintStart_toStartOf="@id/d_view"
+        app:layout_constraintTop_toTopOf="@id/d_view" />
+
+    <TextView
+        android:id="@+id/Dinfo_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/initial_info_label"
+        android:textSize="@dimen/small_text_size"
+        app:layout_constraintStart_toEndOf="@id/d_label"
+        app:layout_constraintBottom_toBottomOf="@id/d_label" />
 
     <jp.ac.titech.itpro.sdl.myapplication.GraphView
         android:id="@+id/v_view"
@@ -53,10 +62,10 @@
         app:layout_constraintBottom_toTopOf="@id/a_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/x_view" />
+        app:layout_constraintTop_toBottomOf="@id/d_view" />
 
     <TextView
-        android:id="@+id/y_label"
+        android:id="@+id/V_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin"
@@ -64,6 +73,15 @@
         android:textSize="@dimen/small_text_size"
         app:layout_constraintStart_toStartOf="@id/v_view"
         app:layout_constraintTop_toTopOf="@id/v_view" />
+
+    <TextView
+        android:id="@+id/Vinfo_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/initial_info_label"
+        android:textSize="@dimen/small_text_size"
+        app:layout_constraintStart_toEndOf="@id/V_label"
+        app:layout_constraintBottom_toBottomOf="@id/V_label" />
 
     <jp.ac.titech.itpro.sdl.myapplication.GraphView
         android:id="@+id/a_view"
@@ -76,15 +94,22 @@
         app:layout_constraintTop_toBottomOf="@id/v_view" />
 
     <TextView
-        android:id="@+id/z_label"
+        android:id="@+id/a_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin"
         android:text="@string/a"
         android:textSize="@dimen/small_text_size"
-        app:layout_constraintStart_toStartOf="@id/v_view"
+        app:layout_constraintStart_toStartOf="@id/a_view"
         app:layout_constraintTop_toTopOf="@id/a_view" />
 
-
+    <TextView
+        android:id="@+id/Ainfo_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/initial_info_label"
+        android:textSize="@dimen/small_text_size"
+        app:layout_constraintStart_toEndOf="@id/a_label"
+        app:layout_constraintBottom_toBottomOf="@id/a_label" />
 
 </android.support.constraint.ConstraintLayout>
