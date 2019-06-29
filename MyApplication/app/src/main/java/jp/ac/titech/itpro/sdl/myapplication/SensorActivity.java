@@ -7,11 +7,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,14 +43,11 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     private GraphView xView, vView, aView;
     private TextView DinfoView,VinfoView,AinfoView;
 
-
-
     private SensorManager manager;
     private Sensor sensor;
 
     private final Handler handler = new Handler();
     private final Timer timer = new Timer();
-
 
     private float rdx=0, rdy=0, rdz=0, rD;
     private float rvx=0, rvy=0, rvz=0, rV;
@@ -61,8 +61,12 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     private float vax, vay, vaz, vA;
     private float oldvax=0,oldvay=0, oldvaz=0;
 
+    private float firstX, firstY, firstZ;
+
     int shD=1;
     int shV=1;
+
+    int Cal=0;//for calibration
 
     private float time = 0;
     private int rate;
@@ -87,7 +91,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         Log.d(TAG, "Num: "+ Integer.toString(num));
 
 
-        typeView = findViewById(R.id.type_view);
+
         infoView = findViewById(R.id.info_view);
         xView = findViewById(R.id.d_view);
         DinfoView = findViewById(R.id.Dinfo_view);
@@ -108,6 +112,19 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
             finish();
         }
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Cal=1;
+                rvx=0;
+                rvy=0;
+                rvz=0;
+                vvx=0;
+                vvy=0;
+                vvz=0;
+            }
+        });
     }
 
     @Override
@@ -127,11 +144,11 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     public void run() {
         infoView.setText(getString(R.string.info_format, accuracy, rate, time));
         xView.addData(rD, vD);
-        DinfoView.setText(getString(R.string.Dinfo_format, vD*shD));
+        DinfoView.setText(getString(R.string.Dinfo_format, rD*shD));
         vView.addData(rV, vV);
-        VinfoView.setText(getString(R.string.Vinfo_format, vV*shV));
+        VinfoView.setText(getString(R.string.Vinfo_format, rV*shV));
         aView.addData(rA, vA);
-        AinfoView.setText(getString(R.string.Ainfo_format, vA));
+        AinfoView.setText(getString(R.string.Ainfo_format, rA));
     }
 
     @Override
@@ -209,48 +226,58 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         float dT = (ts - prevTimestamp)*NS2S;
         time+=dT;
 
-        float rax = event.values[0];
-        float ray = event.values[1];
-        float raz = event.values[2];
+        float rax = event.values[0]/1;
+        float ray = event.values[1]/1;
+        float raz = event.values[2]/1;
 
-        if (prevTimestamp==0){//fist step
-            dT=0;//initial dT reset
-            //detecting initial position
-            if (rax<-9){
-                GravF=1;
-                Grav=rax;
-            }else if(ray<-9){
-                GravF=2;
-                Grav=ray;
-            }else if(raz<-9){
-                GravF=3;
-                Grav=raz;
-            }else if (rax>9){
-                GravF=4;
-                Grav=rax;
-            }else if(ray>9){
-                GravF=5;
-                Grav=ray;
-            }else if(raz>9){
-                GravF=6;
-                Grav=raz;
+        if (rax<0.1){
+            rax=0;
+        }
+        if (ray<0.1){
+            ray=0;
+        }
+        if (raz<0.1){
+            raz=0;
+        }
+
+        if (prevTimestamp==0||Cal==1){//Fist step or Pushing calibration button
+            if(Cal!=1) {
+                dT = 0;//initial dT reset
+                time = 0;
             }
-            time = 0;
+            //detecting initial position
+            if (rax*rax>81){
+                GravF=1;
+            }else if(ray*ray>81){
+                GravF=2;
+            }else if(raz*raz>81){
+                GravF=3;
+            }
+
+            //initial state
+            firstX=rax;
+            firstY=ray;
+            firstZ=raz;
+
+            Cal=0;
+        }else{
+            //initial state = 0
+            rax-=firstX;
+            ray-=firstY;
+            raz-=firstZ;
         }
 
-        if (GravF==1){
-            rax+=Grav;
-        }else if(GravF==2){
-            ray+=Grav;
-        }else if(GravF==3){
-            raz+=Grav;
-        }else if (GravF==4){
-            rax-=Grav;
-        }else if(GravF==5){
-            ray-=Grav;
-        }else if(GravF==6){
-            raz-=Grav;
+        //gravity compensation
+        if(GravF==1){
+            rax=0;
         }
+        if(GravF==2){
+            ray=0;
+        }
+        if(GravF==3){
+            raz=0;
+        }
+
         rA = (float) Math.sqrt(rax * rax + ray * ray + raz * raz);
 
 

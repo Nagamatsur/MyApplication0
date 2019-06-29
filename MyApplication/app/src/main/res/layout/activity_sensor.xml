@@ -6,15 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/type_view"
-        android:layout_width="@dimen/type_width"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin"
-        android:text="@string/sensor_name_label"
-        android:textSize="@dimen/text_size"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/info_view"
@@ -22,8 +13,8 @@
         android:layout_height="wrap_content"
         android:text="@string/initial_info_label"
         android:textSize="@dimen/small_text_size"
-        app:layout_constraintStart_toEndOf="@id/type_view"
-        app:layout_constraintBottom_toBottomOf="@id/type_view" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <jp.ac.titech.itpro.sdl.myapplication.GraphView
         android:id="@+id/d_view"
@@ -33,7 +24,7 @@
         app:layout_constraintBottom_toTopOf="@id/v_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/type_view" />
+        app:layout_constraintTop_toBottomOf="@id/info_view" />
 
     <TextView
         android:id="@+id/d_label"
@@ -112,4 +103,16 @@
         app:layout_constraintStart_toEndOf="@id/a_label"
         app:layout_constraintBottom_toBottomOf="@id/a_label" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_dialog_email"
+        tools:ignore="MissingConstraints" />
 </android.support.constraint.ConstraintLayout>
