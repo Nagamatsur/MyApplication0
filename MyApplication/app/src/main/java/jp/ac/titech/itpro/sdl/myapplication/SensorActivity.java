@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class SensorActivity extends AppCompatActivity implements SensorEventListener, Runnable {
+public class SensorActivity extends AppCompatActivity implements SensorEventListener, Runnable{
     private final static String TAG = SensorActivity.class.getSimpleName();
     private final static long GRAPH_REFRESH_PERIOD_MS = 20;
 
@@ -90,8 +90,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         int num = intent.getIntExtra("Num",0);
         Log.d(TAG, "Num: "+ Integer.toString(num));
 
-
-
         infoView = findViewById(R.id.info_view);
         xView = findViewById(R.id.d_view);
         DinfoView = findViewById(R.id.Dinfo_view);
@@ -112,6 +110,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
             finish();
         }
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -226,114 +225,51 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         float dT = (ts - prevTimestamp)*NS2S;
         time+=dT;
 
-        float rax = event.values[0]/1;
-        float ray = event.values[1]/1;
-        float raz = event.values[2]/1;
-
-        if (rax<0.1){
-            rax=0;
-        }
-        if (ray<0.1){
-            ray=0;
-        }
-        if (raz<0.1){
-            raz=0;
-        }
+        int ray =(int) event.values[1];
 
         if (prevTimestamp==0||Cal==1){//Fist step or Pushing calibration button
             if(Cal!=1) {
                 dT = 0;//initial dT reset
                 time = 0;
             }
-            //detecting initial position
-            if (rax*rax>81){
-                GravF=1;
-            }else if(ray*ray>81){
-                GravF=2;
-            }else if(raz*raz>81){
-                GravF=3;
-            }
 
             //initial state
-            firstX=rax;
             firstY=ray;
-            firstZ=raz;
+            ray=0;
 
             Cal=0;
-        }else{
-            //initial state = 0
-            rax-=firstX;
+        }else{//initial state = 0
             ray-=firstY;
-            raz-=firstZ;
         }
 
-        //gravity compensation
-        if(GravF==1){
-            rax=0;
-        }
-        if(GravF==2){
-            ray=0;
-        }
-        if(GravF==3){
-            raz=0;
-        }
+        rA = ray;
 
-        rA = (float) Math.sqrt(rax * rax + ray * ray + raz * raz);
-
-
-        rvx+=(rax +oldrax)/2*dT;
-        Log.d(TAG, "onSensorChanged: "+ rax +" + "+ oldrax +" /2 * "+dT+" = "+ (rax +oldrax)/2*dT);
-        rvx/=shV;
         rvy+=(ray +oldray)/2*dT;
         rvy/=shV;
-        rvz+=(raz +oldraz)/2*dT;
-        rvz/=shV;
-        rV = (float) Math.sqrt(rvx*rvx+rvy*rvy+vvz*rvz);
-        oldrax= rax;
         oldray= ray;
-        oldraz= raz;
+        rV = rvy;
 
-        rdx+=(rvx+oldrvx)/2*dT;
-        rdx/=shD;
         rdy+=(rvy+oldrvy)/2*dT;
         rdy/=shD;
-        rdz+=(rvz+oldrvz)/2*dT;
-        rdz/=shD;
-        rD = (float) Math.sqrt(rdx*rdx+rdy*rdy+rdz*rdz);
-        oldrvx=rvx;
         oldrvy=rvy;
-        oldrvz=rvz;
+        rD = rdy;
 
-        Log.i(TAG, "Ax=" + rax + ", Ay=" + ray + ", Az=" + raz + ", A=" + rA);
-        Log.i(TAG, "Vx=" + rvx + ", Vy=" + rvy + ", Vz=" + rvz + ", V=" + rV);
-        Log.i(TAG, "Dx=" + rdx + ", Dy=" + rdy + ", Dz=" + rdz + ", D=" + rD);
+        Log.i(TAG, "Ay=" + ray);
+        Log.i(TAG, "Vy=" + rvy );
+        Log.i(TAG, "Dy=" + rdy);
 
-        vax = ALPHA * vax + (1 - ALPHA) * rax;
         vay = ALPHA * vay + (1 - ALPHA) * ray;
-        vaz = ALPHA * vaz + (1 - ALPHA) * raz;
-        vA = (float) Math.sqrt(vax*vax+vay*vay+vaz*vaz);
+        vA = vay;
 
-        vvx=(vax+oldvax)/2*dT+vvx;
-        vvx/=shV;
         vvy=(vay+oldvay)/2*dT+vvy;
         vvy/=shV;
-        vvz=(vaz+oldvaz)/2*dT+vvz;
-        vvz/=shV;
-        vV = (float) Math.sqrt(vvx*vvx+vvy*vvy+vvz*vvz);
-        oldvax=vax;
         oldvay=vay;
-        oldvaz=vaz;
+        vV = vvy;
 
-        vdx=(vvx+oldvvx)/2*dT+vdx;
-        vdx/=shD;
         vdy=(vvy+oldvvy)/2*dT+vdy;
         vdy/=shD;
-        vdz=(vvz+oldvvz)/2*dT+vdz;
-        vdz/=shD;
-        vD = (float) Math.sqrt(vdx*vdx+vdy*vdy+vdz*vdz);
-        oldvvx=vvx;
         oldvvy=vvy;
-        oldvvz=vvz;
+        vD = vdy;
 
         prevTimestamp = ts;
     }
