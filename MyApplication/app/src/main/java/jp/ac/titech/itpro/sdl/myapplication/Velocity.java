@@ -23,8 +23,6 @@ import java.util.TimerTask;
 
 public class Velocity extends AppCompatActivity implements SensorEventListener, Runnable{
     private static final String TAG = SensorActivity.class.getSimpleName();
-    private static final int MAX_VALUES_SIZE = 8;
-    public static final String EXTRA_SENSOR_POS = "sensor_pos";
     private final static long GRAPH_REFRESH_PERIOD_MS = 20;
 
     private static List<Integer> DELAYS = new ArrayList<>();
@@ -110,6 +108,10 @@ public class Velocity extends AppCompatActivity implements SensorEventListener, 
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "Calibration");
+                Context context = getApplicationContext();
+                CharSequence text = "Calibration";
+                int duration = Toast.LENGTH_SHORT;
+                Toast.makeText(context, text, duration).show();
                 Cal=1;
                 rvy=0;
                 vvy=0;
@@ -165,6 +167,7 @@ public class Velocity extends AppCompatActivity implements SensorEventListener, 
         }
 
         rvy+=ray*dT;
+        Log.d(TAG, "(ray+oldray)/2=" + (ray+oldray)/2*dT);
         rvy/=shV;
         oldray= ray;
 
@@ -214,10 +217,10 @@ public class Velocity extends AppCompatActivity implements SensorEventListener, 
     public void run() {
         //Log.d(TAG, "run: "+vvy);
         velocityView.setText(getString(R.string.velocity,rvy, rvy*3.6));
-        distanceView.setText(getString(R.string.distance, distance-rdy));
-        timeView.setText(getString(R.string.time, (distance-rdy) / rvy / 60, (distance-rdy) / rvy%60));
+        distanceView.setText(getString(R.string.distance, distance-Math.abs(rdy)));
+        timeView.setText(getString(R.string.time, (distance-Math.abs(rdy)) / Math.abs(rvy) / 60, (distance-Math.abs(rdy)) / Math.abs(rvy) % 60));
 
-        if(distance-rdy<=0){
+        if(distance-Math.abs(rdy)<=0){
             Context context = getApplicationContext();
             CharSequence text = "Completed";
             int duration = Toast.LENGTH_LONG;
